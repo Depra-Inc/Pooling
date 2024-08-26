@@ -8,24 +8,23 @@ namespace Depra.Pooling.Object
 		private const int DEFAULT_CAPACITY = 16;
 
 		private readonly PooledInstanceFactory<TPooled> _instanceFactory;
-		private readonly IBorrowBuffer<PooledInstance<TPooled>> _borrowBuffer;
 
-		public ObjectPool(object key,
-			IPooledObjectFactory<TPooled> objectFactory,
-			BorrowStrategy borrowStrategy, int capacity = DEFAULT_CAPACITY)
+		public ObjectPool(BorrowStrategy borrowStrategy, IPooledObjectFactory<TPooled> objectFactory,
+			int capacity = DEFAULT_CAPACITY, object key = null)
 		{
-			Key = key;
+			Key = key ?? typeof(TPooled);
 			_borrowBuffer = BorrowBuffer.Create<PooledInstance<TPooled>>(borrowStrategy, DisposeInstance, capacity);
-			_instanceFactory = new PooledInstanceFactory<TPooled>(key, this, objectFactory, _borrowBuffer);
+			_instanceFactory = new PooledInstanceFactory<TPooled>(Key, this, objectFactory, _borrowBuffer);
 		}
 
-		public ObjectPool(object key,
-			IPooledObjectFactory<TPooled> objectFactory,
-			IBorrowBuffer<PooledInstance<TPooled>> borrowBuffer)
+		private readonly IBorrowBuffer<PooledInstance<TPooled>> _borrowBuffer;
+
+		public ObjectPool(IBorrowBuffer<PooledInstance<TPooled>> borrowBuffer,
+			IPooledObjectFactory<TPooled> objectFactory, object key = null)
 		{
-			Key = key;
-			_borrowBuffer = borrowBuffer;
-			_instanceFactory = new PooledInstanceFactory<TPooled>(key, this, objectFactory, _borrowBuffer);
+			Key = key ?? typeof(TPooled);
+			_borrowBuffer = borrowBuffer ?? throw new ArgumentNullException(nameof(borrowBuffer));
+			_instanceFactory = new PooledInstanceFactory<TPooled>(Key, this, objectFactory, _borrowBuffer);
 		}
 
 		public void Dispose() => _borrowBuffer.Dispose();
@@ -67,7 +66,6 @@ namespace Depra.Pooling.Object
 
 		public void AddInactive(TPooled obj)
 		{
-			Guard.AgainstNull(obj, nameof(obj));
 			_instanceFactory.MakePassiveInstance(obj);
 			obj.OnPoolSleep();
 		}

@@ -10,9 +10,7 @@ public sealed class ObjectPoolTests
 	public void Warm_Up(int amount)
 	{
 		// Arrange:
-		var pool = new ObjectPool<Mock.TestPooled>(typeof(Mock.TestPooled),
-			new PooledClassFactory<Mock.TestPooled>(),
-			BorrowStrategy.LIFO, amount);
+		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new PooledClassFactory<TestPooled>(), amount);
 
 		// Act:
 		pool.WarmUp(amount);
@@ -25,9 +23,7 @@ public sealed class ObjectPoolTests
 	public void Request()
 	{
 		// Arrange:
-		var pool = new ObjectPool<Mock.TestPooled>(typeof(Mock.TestPooled),
-			new PooledClassFactory<Mock.TestPooled>(),
-			BorrowStrategy.LIFO);
+		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new PooledClassFactory<TestPooled>());
 
 		// Act:
 		var obj = pool.Request();
@@ -42,11 +38,9 @@ public sealed class ObjectPoolTests
 	public void Release(int amount)
 	{
 		// Arrange:
-		var pool = new ObjectPool<Mock.TestPooled>(typeof(Mock.TestPooled),
-			new PooledClassFactory<Mock.TestPooled>(),
-			BorrowStrategy.LIFO);
+		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new PooledClassFactory<TestPooled>());
 
-		var collection = new List<Mock.TestPooled>(amount);
+		var collection = new List<TestPooled>(amount);
 		for (var i = 0; i < amount; i++)
 		{
 			collection.Add(pool.Request());
@@ -68,9 +62,7 @@ public sealed class ObjectPoolTests
 	public void Dispose()
 	{
 		// Arrange:
-		var pool = new ObjectPool<Mock.TestPooled>(typeof(Mock.TestPooled),
-			new PooledClassFactory<Mock.TestPooled>(),
-			BorrowStrategy.LIFO);
+		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new PooledClassFactory<TestPooled>());
 
 		// Act:
 		pool.Request();
@@ -90,9 +82,7 @@ public sealed class ObjectPoolTests
 	public void AddFreeRange(int capacity)
 	{
 		// Arrange:
-		var pool = new ObjectPool<Mock.TestPooled>(typeof(Mock.TestPooled),
-			new PooledClassFactory<Mock.TestPooled>(),
-			BorrowStrategy.LIFO, capacity);
+		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new PooledClassFactory<TestPooled>(), capacity);
 		var collection = new[] { pool.Request() };
 
 		// Act:
@@ -105,18 +95,16 @@ public sealed class ObjectPoolTests
 
 	[Theory]
 	[InlineData(30)]
-	public void RequestRange(int capacity)
+	public void RequestRange(int amount)
 	{
 		// Arrange:
-		var pool = new ObjectPool<Mock.TestPooled>(typeof(Mock.TestPooled),
-			new PooledClassFactory<Mock.TestPooled>(),
-			BorrowStrategy.LIFO, capacity);
+		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new PooledClassFactory<TestPooled>(), amount);
 
 		// Act:
-		pool.RequestRange(capacity);
+		pool.RequestRange(amount);
 
 		// Assert:
-		pool.Count.Should().Be(capacity);
+		pool.Count.Should().Be(amount);
 	}
 
 	[Theory]
@@ -124,9 +112,7 @@ public sealed class ObjectPoolTests
 	public void ReleaseRange(int capacity)
 	{
 		// Arrange:
-		var pool = new ObjectPool<Mock.TestPooled>(typeof(Mock.TestPooled),
-			new PooledClassFactory<Mock.TestPooled>(),
-			BorrowStrategy.LIFO, capacity);
+		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new PooledClassFactory<TestPooled>(), capacity);
 		var collection = new[] { pool.Request() };
 
 		// Act:
