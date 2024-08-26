@@ -3,8 +3,12 @@
 
 namespace Depra.Pooling
 {
-	public interface IPoolHandle<T> where T : IPooled
+	/// <summary>
+	/// One-way interface for returning instances to the pool.
+	/// </summary>
+	/// <typeparam name="TPooled">Type of the pooled object.</typeparam>
+	public interface IPoolHandle<TPooled> where TPooled : IPooled
 	{
-		void ReturnInstanceToPool(PooledInstance<T> instance, bool reRegisterForFinalization);
+		void ReturnInstanceToPool(PooledInstance<TPooled> instance, bool reRegisterForFinalization);
 	}
 }

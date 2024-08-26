@@ -9,15 +9,15 @@ namespace Depra.Pooling
 	public readonly struct PooledInstance<TPooled> where TPooled : IPooled
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static PooledInstance<TPooled> Create(TPooled @object, IPoolHandle<TPooled> pool) => new(pool, @object);
+		public static PooledInstance<TPooled> Create(IPoolHandle<TPooled> pool, TPooled @object) => new(pool, @object);
 
-		private readonly IPoolHandle<TPooled> _poolHandle;
+		private readonly IPoolHandle<TPooled> _pool;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal PooledInstance(IPoolHandle<TPooled> pool, TPooled obj) : this()
 		{
 			Obj = obj;
-			_poolHandle = pool;
+			_pool = pool;
 			Metadata = new PooledInstanceMetadata(Obj.GetHashCode());
 
 			OnPoolSleep();
@@ -26,13 +26,21 @@ namespace Depra.Pooling
 		public void Dispose()
 		{
 			Metadata.OnDispose();
-			_poolHandle.ReturnInstanceToPool(this, true);
+			_pool.ReturnInstanceToPool(this, true);
 		}
 
-		public TPooled Obj { get; }
+		public TPooled Obj
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get;
+		}
+
 		public PooledInstanceMetadata Metadata { get; }
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal void Activate() => Metadata.OnActivate();
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal void OnPoolSleep() => Metadata.OnDeactivate();
 	}
 

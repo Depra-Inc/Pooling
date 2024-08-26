@@ -3,19 +3,23 @@ using System.Collections.Generic;
 
 namespace Depra.Borrow
 {
-	public interface IBorrowBuffer<T> : IDisposable
+	/// <summary>
+	/// Interface for a buffer that can be borrowed from.
+	/// </summary>
+	/// <typeparam name="TValue">Type of the value to store in the buffer.</typeparam>
+	public interface IBorrowBuffer<TValue> : IDisposable
 	{
 		int Count { get; }
 		int Capacity { get; }
 
-		T Next();
+		TValue Next();
 
-		T Get(int index);
+		TValue Get(int index);
 
-		void Add(ref T instance);
+		void Add(ref TValue instance);
 
-		bool Contains(ref T instance);
+		bool Contains(ref TValue instance);
 
-		IEnumerable<T> Enumerate();
+		IEnumerable<TValue> Enumerate();
 	}
 }

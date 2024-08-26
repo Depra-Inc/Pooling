@@ -61,11 +61,12 @@ namespace Depra.Pooling.Object
 				instance.Obj.OnPoolCreate(this);
 			}
 
+			var obj = instance.Obj;
+			obj.OnPoolGet();
 			instance.Activate();
-			instance.Obj.OnPoolGet();
 			_activeInstances.Add(ref instance);
 
-			return instance.Obj;
+			return obj;
 		}
 
 		public void Release(TPooled obj)
@@ -76,7 +77,7 @@ namespace Depra.Pooling.Object
 			PassivateInstance(_activeInstances.Next());
 		}
 
-		public void AddInactive(TPooled obj) => PassivateInstance(PooledInstance<TPooled>.Create(obj, this));
+		public void AddInactive(TPooled obj) => PassivateInstance(PooledInstance<TPooled>.Create(this, obj));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void PassivateInstance(PooledInstance<TPooled> instance)
@@ -91,6 +92,7 @@ namespace Depra.Pooling.Object
 		{
 			var obj = instance.Obj;
 			obj.OnPoolSleep();
+
 			_objectFactory.OnDisable(Key, obj);
 			_objectFactory.Destroy(Key, obj);
 		}

@@ -5,7 +5,7 @@ using System;
 
 namespace Depra.Pooling.Object
 {
-	public sealed class LambdaBasedPooledObjectFactory<TObject> : IPooledObjectFactory<TObject> where TObject : class
+	public sealed class LambdaBasedPooledObjectFactory<TObject> : IPooledObjectFactory<TObject>
 	{
 		private readonly Func<TObject> _create;
 		private readonly Action<TObject> _destroy;
@@ -14,7 +14,7 @@ namespace Depra.Pooling.Object
 
 		public LambdaBasedPooledObjectFactory(
 			Func<TObject> create,
-			Action<TObject> destroy,
+			Action<TObject> destroy = null,
 			Action<object, TObject> onEnable = null,
 			Action<object, TObject> onDisable = null)
 		{
@@ -25,7 +25,7 @@ namespace Depra.Pooling.Object
 		}
 
 		TObject IPooledObjectFactory<TObject>.Create(object key) => _create.Invoke();
-		void IPooledObjectFactory<TObject>.Destroy(object key, TObject instance) => _destroy.Invoke(instance);
+		void IPooledObjectFactory<TObject>.Destroy(object key, TObject instance) => _destroy?.Invoke(instance);
 
 		void IPooledObjectFactory<TObject>.OnEnable(object key, TObject instance) => _onEnable?.Invoke(key, instance);
 		void IPooledObjectFactory<TObject>.OnDisable(object key, TObject instance) => _onDisable?.Invoke(key, instance);

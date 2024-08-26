@@ -8,21 +8,23 @@ namespace Depra.Pooling.Object.Benchmarks;
 
 public class ObjectPoolBenchmarks
 {
-	private const int DEFAULT_CAPACITY = 100;
-	private ObjectPool<PoolableObject> _hotPool;
-	private ObjectPool<PoolableObject> _coldPool;
+	private const int WARMUP_AMOUNT = 1000;
+	private ObjectPool<FakePooledObject> _hotPool;
+	private ObjectPool<FakePooledObject> _coldPool;
 
-	[GlobalSetup]
-	public void GlobalSetup()
+	[IterationSetup]
+	public void Setup()
 	{
-		_coldPool = new ObjectPool<PoolableObject>(BorrowStrategy.LIFO, new PooledClassFactory<PoolableObject>());
-
-		_hotPool = new ObjectPool<PoolableObject>(BorrowStrategy.LIFO, new PooledClassFactory<PoolableObject>());
-		_hotPool.WarmUp(DEFAULT_CAPACITY);
+		var fakeObject = new FakePooledObject();
+		_coldPool = new ObjectPool<FakePooledObject>(BorrowStrategy.LIFO,
+			new LambdaBasedPooledObjectFactory<FakePooledObject>(() => fakeObject));
+		_hotPool = new ObjectPool<FakePooledObject>(BorrowStrategy.LIFO,
+			new LambdaBasedPooledObjectFactory<FakePooledObject>(() => fakeObject));
+		_hotPool.WarmUp(WARMUP_AMOUNT);
 	}
 
-	[GlobalCleanup]
-	public void GlobalCleanup() => _hotPool.Dispose();
+	[IterationCleanup]
+	public void Cleanup() => _hotPool.Dispose();
 
 	[Benchmark]
 	public void Request() => _hotPool.Request();
@@ -31,5 +33,5 @@ public class ObjectPoolBenchmarks
 	public void Cycle() => _hotPool.Release(_hotPool.Request());
 
 	[Benchmark]
-	public void WarmUp() => _coldPool.WarmUp(DEFAULT_CAPACITY);
+	public void WarmUp() => _coldPool.WarmUp(WARMUP_AMOUNT);
 }

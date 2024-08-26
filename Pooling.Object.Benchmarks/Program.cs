@@ -18,6 +18,8 @@ IConfig configuration = DefaultConfig.Instance
 	.AddDiagnoser(MemoryDiagnoser.Default)
 	.AddValidator(JitOptimizationsValidator.FailOnError)
 	.AddJob(Job.Default.WithToolchain(InProcessEmitToolchain.Instance))
+	.WithOptions(ConfigOptions.JoinSummary)
+	.WithOptions(ConfigOptions.DisableLogFile)
 	.WithOptions(ConfigOptions.DisableOptimizationsValidator)
 	.WithOrderer(new DefaultOrderer(SummaryOrderPolicy.FastestToSlowest));
 

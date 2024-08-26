@@ -3,6 +3,9 @@
 
 namespace Depra.Pooling
 {
+	/// <summary>
+	/// Common interface for all pools.
+	/// </summary>
 	public interface IPool
 	{
 		int Count { get; }
@@ -13,17 +16,13 @@ namespace Depra.Pooling
 		void ReleasePooled(IPooled pooled);
 	}
 
+	/// <summary>
+	/// Common interface for all typed pools.
+	/// </summary>
+	/// <typeparam name="TPooled">Type of the pooled object.</typeparam>
 	public interface IPool<TPooled> : IPool
 	{
-		/// <summary>
-		/// Returns an object from the pool.
-		/// </summary>
 		TPooled Request();
-
-		/// <summary>
-		/// Releases an object back to the pool.
-		/// </summary>
-		/// <param name="obj">Object to release.</param>
 		void Release(TPooled obj);
 	}
 }

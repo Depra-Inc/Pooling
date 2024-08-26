@@ -8,6 +8,9 @@ namespace Depra.Pooling
 {
 	public static class PoolExtensions
 	{
+		/// <summary>
+		/// Warm up the <see cref="IPool{TPooled}"/> by requesting and releasing <paramref name="count"/> objects.
+		/// </summary>
 		public static void WarmUp<TPooled>(this IPool<TPooled> pool, int count)
 			where TPooled : IPooled
 		{
@@ -15,13 +18,16 @@ namespace Depra.Pooling
 			pool.ReleaseRange(collection);
 		}
 
+		/// <summary>
+		/// Request a range of objects from the <see cref="IPool{TPooled}"/>.
+		/// </summary>
 		public static IEnumerable<TPooled> RequestRange<TPooled>(this IPool<TPooled> pool, int count)
 			where TPooled : IPooled
 		{
 			var collection = new TPooled[count];
-			for (var i = 0; i < count; i++)
+			for (var index = 0; index < count; index++)
 			{
-				collection[i] = pool.Request();
+				collection[index] = pool.Request();
 			}
 
 			return collection;
