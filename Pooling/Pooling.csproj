@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <LangVersion>9</LangVersion>
+        <Nullable>disable</Nullable>
+        <RootNamespace>Depra.Pooling</RootNamespace>
+        <AssemblyName>Depra.Pooling</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Borrow\Borrow.csproj" />
+    </ItemGroup>
+
+</Project>
