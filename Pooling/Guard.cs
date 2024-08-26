@@ -11,32 +11,23 @@ namespace Depra.Pooling
 	{
 		[Conditional("DEBUG")]
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void Against(bool condition, Func<Exception> exception)
+		public static void AgainstNull(object value, string name) =>
+			Against(value == null, () => new ArgumentNullException(name));
+
+		[Conditional("DEBUG")]
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void AgainstEmpty<TValue>(IBorrowBuffer<TValue> buffer, Func<Exception> exception) =>
+			Against(buffer.Count <= 0, exception);
+
+		[Conditional("DEBUG")]
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static void Against(bool condition, Func<Exception> exception)
 		{
 			if (condition)
 			{
 				throw exception();
 			}
 		}
-
-		[Conditional("DEBUG")]
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void AgainstNull(object value, string name) =>
-			AgainstNull(value, () => new ArgumentNullException(name));
-
-		[Conditional("DEBUG")]
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void AgainstNull<T>(T value, Func<Exception> exception) => Against(value == null, exception);
-
-		[Conditional("DEBUG")]
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void AgainstEmpty<TValue>(IBorrowBuffer<TValue> buffer, Func<Exception> exception) =>
-			Against(buffer.Count <= 0, exception);
-	}
-
-	internal sealed class NoInstanceAvailable : Exception
-	{
-		public NoInstanceAvailable() : base("No instance available in the pool.") { }
 	}
 
 	internal sealed class NoInstanceToMakePassive : Exception

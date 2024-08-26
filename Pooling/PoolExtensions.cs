@@ -1,32 +1,51 @@
+// SPDX-License-Identifier: Apache-2.0
+// © 2024 Nikolay Melnikov <n.melnikov@depra.org>
+
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Depra.Pooling
 {
 	public static class PoolExtensions
 	{
-		public static void WarmUp<T>(this IPool<T> pool, int count) where T : IPooled
+		public static void WarmUp<TPooled>(this IPool<TPooled> pool, int count)
+			where TPooled : IPooled
 		{
-			var objects = pool.RequestRange(count);
-			pool.ReleaseRange(objects);
+			var collection = pool.RequestRange(count);
+			pool.ReleaseRange(collection);
 		}
 
-		public static IEnumerable<T> RequestRange<T>(this IPool<T> pool, int count) where T : IPooled
+		public static IEnumerable<TPooled> RequestRange<TPooled>(this IPool<TPooled> pool, int count)
+			where TPooled : IPooled
 		{
-			var result = new T[count];
+			var collection = new TPooled[count];
 			for (var i = 0; i < count; i++)
 			{
-				result[i] = pool.Request();
+				collection[i] = pool.Request();
 			}
 
-			return result;
+			return collection;
 		}
 
 		/// <summary>
-		/// Releases all objects in the list, the list should be cleared afterwards.
+		/// Releases all objects in the list, the list should be cleared afterward.
 		/// </summary>
-		/// <param name="pool"></param>
-		/// <param name="collection"></param>
-		public static void ReleaseRange<T>(this IPool<T> pool, IEnumerable<T> collection) where T : IPooled
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void ReleaseRange<TPooled>(this IPool<TPooled> pool, TPooled[] collection)
+			where TPooled : IPooled
+		{
+			foreach (var item in collection)
+			{
+				pool.Release(item);
+			}
+		}
+
+		/// <summary>
+		/// Releases all objects in the list, the list should be cleared afterward.
+		/// </summary>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void ReleaseRange<TPooled>(this IPool<TPooled> pool, IEnumerable<TPooled> collection)
+			where TPooled : IPooled
 		{
 			foreach (var item in collection)
 			{

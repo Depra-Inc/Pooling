@@ -1,4 +1,8 @@
+// SPDX-License-Identifier: Apache-2.0
+// © 2024 Nikolay Melnikov <n.melnikov@depra.org>
+
 using System;
+using System.Runtime.CompilerServices;
 using Depra.Borrow;
 
 namespace Depra.Pooling.Object
@@ -6,74 +10,89 @@ namespace Depra.Pooling.Object
 	public sealed class ObjectPool<TPooled> : IPool<TPooled>, IPoolHandle<TPooled>, IDisposable where TPooled : IPooled
 	{
 		private const int DEFAULT_CAPACITY = 16;
-
-		private readonly PooledInstanceFactory<TPooled> _instanceFactory;
+		private readonly IPooledObjectFactory<TPooled> _objectFactory;
+		private readonly IBorrowBuffer<PooledInstance<TPooled>> _activeInstances;
+		private readonly IBorrowBuffer<PooledInstance<TPooled>> _passiveInstances;
 
 		public ObjectPool(BorrowStrategy borrowStrategy, IPooledObjectFactory<TPooled> objectFactory,
 			int capacity = DEFAULT_CAPACITY, object key = null)
 		{
-			Key = key ?? typeof(TPooled);
-			_borrowBuffer = BorrowBuffer.Create<PooledInstance<TPooled>>(borrowStrategy, DisposeInstance, capacity);
-			_instanceFactory = new PooledInstanceFactory<TPooled>(Key, this, objectFactory, _borrowBuffer);
+			Key = key ?? this;
+			_objectFactory = objectFactory ?? throw new ArgumentNullException(nameof(objectFactory));
+			_activeInstances = BorrowBuffer.Create<PooledInstance<TPooled>>(borrowStrategy, DisposeInstance, capacity);
+			_passiveInstances = BorrowBuffer.Create<PooledInstance<TPooled>>(borrowStrategy, DisposeInstance, capacity);
 		}
 
-		private readonly IBorrowBuffer<PooledInstance<TPooled>> _borrowBuffer;
-
-		public ObjectPool(IBorrowBuffer<PooledInstance<TPooled>> borrowBuffer,
-			IPooledObjectFactory<TPooled> objectFactory, object key = null)
+		public ObjectPool(IPooledObjectFactory<TPooled> objectFactory,
+			IBorrowBuffer<PooledInstance<TPooled>> activeInstances,
+			IBorrowBuffer<PooledInstance<TPooled>> passiveInstances, object key = null)
 		{
-			Key = key ?? typeof(TPooled);
-			_borrowBuffer = borrowBuffer ?? throw new ArgumentNullException(nameof(borrowBuffer));
-			_instanceFactory = new PooledInstanceFactory<TPooled>(Key, this, objectFactory, _borrowBuffer);
+			Key = key ?? this;
+			_objectFactory = objectFactory ?? throw new ArgumentNullException(nameof(objectFactory));
+			_activeInstances = activeInstances ?? throw new ArgumentNullException(nameof(activeInstances));
+			_passiveInstances = passiveInstances ?? throw new ArgumentNullException(nameof(passiveInstances));
 		}
 
-		public void Dispose() => _borrowBuffer.Dispose();
+		public void Dispose()
+		{
+			_activeInstances.Dispose();
+			_passiveInstances.Dispose();
+		}
 
 		public object Key { get; }
-		public int Count => _borrowBuffer.Count;
-		public int Capacity => _borrowBuffer.Capacity;
+		public int Count => ActiveCount + PassiveCount;
+		public int ActiveCount => _activeInstances.Count;
+		public int PassiveCount => _passiveInstances.Count;
 
-		public TPooled Request()
+		public TPooled Request() => Request(out _);
+
+		public TPooled Request(out PooledInstance<TPooled> instance)
 		{
-			Request(out var obj);
-			return obj;
-		}
-
-		public PooledInstance<TPooled> Request(out TPooled obj)
-		{
-			var instance = _instanceFactory.MakeActiveInstance(out var reuse);
-			obj = instance.Obj;
-
-			if (reuse)
+			if (_passiveInstances.Count > 0)
 			{
-				obj.OnPoolReuse();
+				// Reuse an instance if there are active instances.
+				instance = _passiveInstances.Next();
+				instance.Obj.OnPoolReuse();
 			}
 			else
 			{
-				obj.OnPoolCreate(this);
+				// Create a new instance if there are no active instances.
+				instance = new PooledInstance<TPooled>(this, _objectFactory.Create(Key));
+				instance.Obj.OnPoolCreate(this);
 			}
 
-			obj.OnPoolGet();
+			instance.Activate();
+			instance.Obj.OnPoolGet();
+			_activeInstances.Add(ref instance);
 
-			return instance;
+			return instance.Obj;
 		}
 
 		public void Release(TPooled obj)
 		{
 			Guard.AgainstNull(obj, nameof(obj));
-			_instanceFactory.MakePassiveInstance().Obj.OnPoolSleep();
+			Guard.AgainstEmpty(_activeInstances, () => new NoInstanceToMakePassive());
+
+			PassivateInstance(_activeInstances.Next());
 		}
 
-		public void AddInactive(TPooled obj)
+		public void AddInactive(TPooled obj) => PassivateInstance(PooledInstance<TPooled>.Create(obj, this));
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private void PassivateInstance(PooledInstance<TPooled> instance)
 		{
-			_instanceFactory.MakePassiveInstance(obj);
-			obj.OnPoolSleep();
+			instance.OnPoolSleep();
+			instance.Obj.OnPoolSleep();
+			_passiveInstances.Add(ref instance);
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void DisposeInstance(PooledInstance<TPooled> instance)
 		{
-			instance.Obj.OnPoolSleep();
-			_instanceFactory.DestroyInstance(ref instance);
+			var obj = instance.Obj;
+			obj.OnPoolSleep();
+			_objectFactory.OnDisable(Key, obj);
+			_objectFactory.Destroy(Key, obj);
 		}
 
 		IPooled IPool.RequestPooled() => Request();
@@ -84,7 +103,7 @@ namespace Depra.Pooling.Object
 		{
 			if (reRegisterForFinalization)
 			{
-				_borrowBuffer.Add(ref instance);
+				_activeInstances.Add(ref instance);
 			}
 
 			Release(instance.Obj);

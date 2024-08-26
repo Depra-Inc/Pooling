@@ -1,9 +1,13 @@
-﻿namespace Depra.Pooling
+﻿// SPDX-License-Identifier: Apache-2.0
+// © 2024 Nikolay Melnikov <n.melnikov@depra.org>
+
+namespace Depra.Pooling
 {
 	public interface IPool
 	{
 		int Count { get; }
-		int Capacity { get; }
+		int ActiveCount { get; }
+		int PassiveCount { get; }
 
 		IPooled RequestPooled();
 		void ReleasePooled(IPooled pooled);

@@ -16,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pooling.Object.Benchmarks", "Pooling.Object.Benchmarks\Pooling.Object.Benchmarks.csproj", "{7E854ABE-C01E-4AF9-A5B6-D6F8415EE93F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pooling.Services", "Pooling.Services\Pooling.Services.csproj", "{BF74C8B1-D8FB-40C3-8A5D-A29FB9AFC623}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,7 @@ Global
 		{3F7563AF-941C-4C38-9D4B-93C769DA1E0A} = {430DD556-7778-4DC0-A56D-998BE53FD913}
 		{3C75F8C8-1A60-4E16-AA57-E6BD75C8E48B} = {4AC73438-ECD0-492E-9F7C-997F502196B6}
 		{7E854ABE-C01E-4AF9-A5B6-D6F8415EE93F} = {BDE15C2E-5CC4-4F8C-9D8C-EA35148DE02D}
+		{BF74C8B1-D8FB-40C3-8A5D-A29FB9AFC623} = {430DD556-7778-4DC0-A56D-998BE53FD913}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{2764F49B-754C-4079-96F4-961A7E937320}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -49,5 +52,9 @@ Global
 		{7E854ABE-C01E-4AF9-A5B6-D6F8415EE93F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E854ABE-C01E-4AF9-A5B6-D6F8415EE93F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7E854ABE-C01E-4AF9-A5B6-D6F8415EE93F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF74C8B1-D8FB-40C3-8A5D-A29FB9AFC623}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF74C8B1-D8FB-40C3-8A5D-A29FB9AFC623}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF74C8B1-D8FB-40C3-8A5D-A29FB9AFC623}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF74C8B1-D8FB-40C3-8A5D-A29FB9AFC623}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
