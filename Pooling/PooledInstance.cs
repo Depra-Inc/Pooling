@@ -26,7 +26,7 @@ namespace Depra.Pooling
 		public void Dispose()
 		{
 			Metadata.OnDispose();
-			_pool.ReturnInstanceToPool(this, true);
+			_pool.ReturnInstanceToPool(this);
 		}
 
 		public TPooled Obj
@@ -38,10 +38,18 @@ namespace Depra.Pooling
 		public PooledInstanceMetadata Metadata { get; }
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal void Activate() => Metadata.OnActivate();
+		internal void OnPoolGet()
+		{
+			Obj.OnPoolGet();
+			Metadata.OnActivate();
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal void OnPoolSleep() => Metadata.OnDeactivate();
+		internal void OnPoolSleep()
+		{
+			Obj.OnPoolSleep();
+			Metadata.OnDeactivate();
+		}
 	}
 
 	/// <summary>

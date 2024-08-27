@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// © 2024 Nikolay Melnikov <n.melnikov@depra.org>
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -14,7 +17,7 @@ namespace Depra.Borrow
 		{
 			_random = random;
 			_disposeAction = disposeAction;
-			_values = new List<TValue>(Capacity = capacity);
+			_values = new List<TValue>(capacity);
 		}
 
 		public void Dispose()
@@ -28,7 +31,6 @@ namespace Depra.Borrow
 		}
 
 		public int Count => _values.Count;
-		public int Capacity { get; }
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public TValue Next()
@@ -41,16 +43,7 @@ namespace Depra.Borrow
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public TValue Get(int index) => _values[index];
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Add(ref TValue instance) => _values.Add(instance);
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public bool Contains(ref TValue instance) => _values.Contains(instance);
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public IEnumerable<TValue> Enumerate() => _values;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private int RandomIndex()

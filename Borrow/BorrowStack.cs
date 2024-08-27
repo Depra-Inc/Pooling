@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// © 2024 Nikolay Melnikov <n.melnikov@depra.org>
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -12,7 +15,7 @@ namespace Depra.Borrow
 		public BorrowStack(int capacity, Action<TValue> disposeAction)
 		{
 			_disposeAction = disposeAction;
-			_values = new Stack<TValue>(Capacity = capacity);
+			_values = new Stack<TValue>(capacity);
 		}
 
 		public void Dispose()
@@ -26,21 +29,11 @@ namespace Depra.Borrow
 		}
 
 		public int Count => _values.Count;
-		public int Capacity { get; }
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public TValue Next() => _values.Pop();
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public TValue Get(int index) => _values.ToArray()[index];
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Add(ref TValue instance) => _values.Push(instance);
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public bool Contains(ref TValue instance) => _values.Contains(instance);
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public IEnumerable<TValue> Enumerate() => _values;
 	}
 }

@@ -1,5 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// SPDX-License-Identifier: Apache-2.0
+// © 2024 Nikolay Melnikov <n.melnikov@depra.org>
+
+using System;
 
 namespace Depra.Borrow
 {
@@ -10,16 +12,9 @@ namespace Depra.Borrow
 	public interface IBorrowBuffer<TValue> : IDisposable
 	{
 		int Count { get; }
-		int Capacity { get; }
 
 		TValue Next();
 
-		TValue Get(int index);
-
 		void Add(ref TValue instance);
-
-		bool Contains(ref TValue instance);
-
-		IEnumerable<TValue> Enumerate();
 	}
 }

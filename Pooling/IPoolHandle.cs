@@ -9,6 +9,6 @@ namespace Depra.Pooling
 	/// <typeparam name="TPooled">Type of the pooled object.</typeparam>
 	public interface IPoolHandle<TPooled> where TPooled : IPooled
 	{
-		void ReturnInstanceToPool(PooledInstance<TPooled> instance, bool reRegisterForFinalization);
+		void ReturnInstanceToPool(PooledInstance<TPooled> instance);
 	}
 }
