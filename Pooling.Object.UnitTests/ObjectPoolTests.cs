@@ -19,7 +19,7 @@ public sealed class ObjectPoolTests
 		pool.WarmUp(amount);
 
 		// Assert:
-		pool.Count.Should().Be(amount);
+		pool.CountAll.Should().Be(amount);
 	}
 
 	[Fact]
@@ -71,13 +71,13 @@ public sealed class ObjectPoolTests
 		pool.Request();
 
 		// Assert:
-		pool.Count.Should().NotBe(0);
+		pool.CountAll.Should().NotBe(0);
 
 		// Act:
 		pool.Dispose();
 
 		// Assert:
-		pool.Count.Should().Be(0);
+		pool.CountAll.Should().Be(0);
 	}
 
 	[Theory]
@@ -107,7 +107,7 @@ public sealed class ObjectPoolTests
 		pool.RequestRange(amount);
 
 		// Assert:
-		pool.Count.Should().Be(amount);
+		pool.CountAll.Should().Be(amount);
 	}
 
 	[Theory]

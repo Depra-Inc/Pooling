@@ -13,7 +13,7 @@ namespace Depra.Pooling.Object
 		{
 			foreach (var item in collection)
 			{
-				self.AddInactive(item);
+				self.Release(item);
 			}
 		}
 	}

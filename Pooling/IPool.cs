@@ -8,9 +8,9 @@ namespace Depra.Pooling
 	/// </summary>
 	public interface IPool
 	{
-		int Count { get; }
-		int ActiveCount { get; }
-		int PassiveCount { get; }
+		int CountAll { get; }
+		int CountActive { get; }
+		int CountPassive { get; }
 
 		IPooled RequestPooled();
 		void ReleasePooled(IPooled pooled);

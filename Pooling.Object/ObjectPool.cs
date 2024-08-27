@@ -11,7 +11,6 @@ namespace Depra.Pooling.Object
 	{
 		private const int DEFAULT_CAPACITY = 16;
 		private readonly IPooledObjectFactory<TPooled> _objectFactory;
-		private readonly IBorrowBuffer<PooledInstance<TPooled>> _activeInstances;
 		private readonly IBorrowBuffer<PooledInstance<TPooled>> _passiveInstances;
 
 		public ObjectPool(BorrowStrategy borrowStrategy, IPooledObjectFactory<TPooled> objectFactory,
@@ -19,33 +18,32 @@ namespace Depra.Pooling.Object
 		{
 			Key = key ?? this;
 			_objectFactory = objectFactory ?? throw new ArgumentNullException(nameof(objectFactory));
-			_activeInstances = BorrowBuffer.Create<PooledInstance<TPooled>>(borrowStrategy, DisposeInstance, capacity);
 			_passiveInstances = BorrowBuffer.Create<PooledInstance<TPooled>>(borrowStrategy, DisposeInstance, capacity);
 		}
 
 		public ObjectPool(IPooledObjectFactory<TPooled> objectFactory,
-			IBorrowBuffer<PooledInstance<TPooled>> activeInstances,
 			IBorrowBuffer<PooledInstance<TPooled>> passiveInstances, object key = null)
 		{
 			Key = key ?? this;
 			_objectFactory = objectFactory ?? throw new ArgumentNullException(nameof(objectFactory));
-			_activeInstances = activeInstances ?? throw new ArgumentNullException(nameof(activeInstances));
 			_passiveInstances = passiveInstances ?? throw new ArgumentNullException(nameof(passiveInstances));
 		}
 
 		public void Dispose()
 		{
-			_activeInstances.Dispose();
 			_passiveInstances.Dispose();
+			CountAll = 0;
 		}
 
 		public object Key { get; }
-		public int Count => ActiveCount + PassiveCount;
-		public int ActiveCount => _activeInstances.Count;
-		public int PassiveCount => _passiveInstances.Count;
+		public int CountAll { get; private set; }
+		public int CountActive => CountAll - CountPassive;
+		public int CountPassive => _passiveInstances.Count;
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public TPooled Request() => Request(out _);
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public TPooled Request(out PooledInstance<TPooled> instance)
 		{
 			if (_passiveInstances.Count > 0)
@@ -59,25 +57,22 @@ namespace Depra.Pooling.Object
 				// Create a new instance if there are no active instances.
 				instance = new PooledInstance<TPooled>(this, _objectFactory.Create(Key));
 				instance.Obj.OnPoolCreate(this);
+				++CountAll;
 			}
 
 			var obj = instance.Obj;
 			obj.OnPoolGet();
 			instance.Activate();
-			_activeInstances.Add(ref instance);
 
 			return obj;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Release(TPooled obj)
 		{
 			Guard.AgainstNull(obj, nameof(obj));
-			Guard.AgainstEmpty(_activeInstances, () => new NoInstanceToMakePassive());
-
-			PassivateInstance(_activeInstances.Next());
+			PassivateInstance(PooledInstance<TPooled>.Create(this, obj));
 		}
-
-		public void AddInactive(TPooled obj) => PassivateInstance(PooledInstance<TPooled>.Create(this, obj));
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private void PassivateInstance(PooledInstance<TPooled> instance)
@@ -97,18 +92,13 @@ namespace Depra.Pooling.Object
 			_objectFactory.Destroy(Key, obj);
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		IPooled IPool.RequestPooled() => Request();
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		void IPool.ReleasePooled(IPooled pooled) => Release((TPooled) pooled);
 
-		void IPoolHandle<TPooled>.ReturnInstanceToPool(PooledInstance<TPooled> instance, bool reRegisterForFinalization)
-		{
-			if (reRegisterForFinalization)
-			{
-				_activeInstances.Add(ref instance);
-			}
-
-			Release(instance.Obj);
-		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		void IPoolHandle<TPooled>.ReturnInstanceToPool(PooledInstance<TPooled> instance, bool reRegisterForFinalization) => Release(instance.Obj);
 	}
 }
