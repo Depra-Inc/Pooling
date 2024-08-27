@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace Depra.Pooling.Object.Benchmarks;
 
-internal readonly struct FakePooledObject : IPooled
+public readonly struct FakePooledObject : IPooled
 {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	void IPooled.OnPoolCreate(IPool pool) { }

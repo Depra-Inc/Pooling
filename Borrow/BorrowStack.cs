@@ -28,12 +28,16 @@ namespace Depra.Borrow
 			_values.Clear();
 		}
 
-		public int Count => _values.Count;
+		public int Count
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => _values.Count;
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public TValue Next() => _values.Pop();
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Add(ref TValue instance) => _values.Push(instance);
+		public void Add(TValue instance) => _values.Push(instance);
 	}
 }

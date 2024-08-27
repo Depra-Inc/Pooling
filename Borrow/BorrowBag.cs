@@ -30,7 +30,11 @@ namespace Depra.Borrow
 			_values.Clear();
 		}
 
-		public int Count => _values.Count;
+		public int Count
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get => _values.Count;
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public TValue Next()
@@ -43,16 +47,9 @@ namespace Depra.Borrow
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Add(ref TValue instance) => _values.Add(instance);
+		public void Add(TValue instance) => _values.Add(instance);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private int RandomIndex()
-		{
-			const int MIN_INDEX = 0;
-			var maxIndex = _values.Count;
-			var randomIndex = _random.Next(MIN_INDEX, maxIndex);
-
-			return randomIndex;
-		}
+		private int RandomIndex() => _random.Next(0, _values.Count);
 	}
 }

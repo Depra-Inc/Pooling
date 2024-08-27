@@ -25,15 +25,6 @@ namespace Depra.Pooling.Object
 			_passiveInstances = BorrowBuffer.Create<PooledInstance<TPooled>>(borrowStrategy, DisposeInstance, capacity);
 		}
 
-		public ObjectPool(IPooledObjectFactory<TPooled> objectFactory,
-			IBorrowBuffer<PooledInstance<TPooled>> passiveInstances, object key = null, int maxCapacity = MAX_CAPACITY)
-		{
-			Key = key ?? this;
-			_maxCapacity = maxCapacity < 0 ? MAX_CAPACITY : maxCapacity;
-			_objectFactory = objectFactory ?? throw new ArgumentNullException(nameof(objectFactory));
-			_passiveInstances = passiveInstances ?? throw new ArgumentNullException(nameof(passiveInstances));
-		}
-
 		public void Dispose()
 		{
 			_passiveInstances.Dispose();
@@ -46,6 +37,7 @@ namespace Depra.Pooling.Object
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get;
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			private set;
 		}
 
@@ -67,22 +59,27 @@ namespace Depra.Pooling.Object
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public TPooled Request(out PooledInstance<TPooled> instance)
 		{
+			TPooled obj;
 			if (CountPassive == 0)
 			{
 				// Create a new instance if there are no active instances.
 				instance = new PooledInstance<TPooled>(this, _objectFactory.Create(Key));
-				instance.Obj.OnPoolCreate(this);
+				obj = instance.Obj;
+				obj.OnPoolCreate(this);
 				++CountAll;
 			}
 			else
 			{
 				// Reuse an instance if there are active instances.
 				instance = _passiveInstances.Next();
-				instance.Obj.OnPoolReuse();
+				obj = instance.Obj;
+				obj.OnPoolReuse();
 			}
 
 			instance.OnPoolGet();
-			return instance.Obj;
+			_objectFactory.OnEnable(Key, obj);
+
+			return obj;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -95,7 +92,7 @@ namespace Depra.Pooling.Object
 
 			if (CountPassive < _maxCapacity)
 			{
-				_passiveInstances.Add(ref instance);
+				_passiveInstances.Add(instance);
 			}
 		}
 

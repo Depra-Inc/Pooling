@@ -6,14 +6,14 @@ using System.Runtime.CompilerServices;
 
 namespace Depra.Pooling.Object
 {
-	public sealed class LambdaBasedPooledObjectFactory<TObject> : IPooledObjectFactory<TObject>
+	public sealed class LambdaBasedObjectFactory<TObject> : IPooledObjectFactory<TObject>
 	{
 		private readonly Func<TObject> _create;
 		private readonly Action<TObject> _destroy;
 		private readonly Action<object, TObject> _onEnable;
 		private readonly Action<object, TObject> _onDisable;
 
-		public LambdaBasedPooledObjectFactory(
+		public LambdaBasedObjectFactory(
 			Func<TObject> create,
 			Action<TObject> destroy = null,
 			Action<object, TObject> onEnable = null,

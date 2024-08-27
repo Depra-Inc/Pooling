@@ -7,19 +7,19 @@ using System.Runtime.CompilerServices;
 
 namespace Depra.Pooling.Object
 {
-	public sealed class PooledClassFactory<TClass> : IPooledObjectFactory<TClass> where TClass : class, new()
+	public sealed class ReflectionBasedObjectFactory<TClass> : IPooledObjectFactory<TClass> where TClass : class
 	{
 		private readonly object[] _constructorArgs;
 		private readonly Dictionary<object, TClass> _instances;
 
-		public PooledClassFactory(params object[] constructorArgs)
+		public ReflectionBasedObjectFactory(params object[] constructorArgs)
 		{
 			_constructorArgs = constructorArgs;
 			_instances = new Dictionary<object, TClass>();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public TClass Create(object key)
+		TClass IPooledObjectFactory<TClass>.Create(object key)
 		{
 			if (_instances.TryGetValue(key, out var instance))
 			{
@@ -35,7 +35,7 @@ namespace Depra.Pooling.Object
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Destroy(object key, TClass instance)
+		void IPooledObjectFactory<TClass>.Destroy(object key, TClass instance)
 		{
 			if (instance is IDisposable disposableInstance)
 			{

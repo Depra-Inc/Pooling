@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Depra.Borrow;
 
 [assembly: InternalsVisibleTo("Depra.Pooling.Object")]
 
@@ -16,11 +15,6 @@ namespace Depra.Pooling
 
 		[Conditional("DEBUG")]
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void AgainstEmpty<TValue>(IBorrowBuffer<TValue> buffer, Func<Exception> exception) =>
-			Against(buffer.Count <= 0, exception);
-
-		[Conditional("DEBUG")]
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static void Against(bool condition, Func<Exception> exception)
 		{
 			if (condition)
@@ -28,10 +22,5 @@ namespace Depra.Pooling
 				throw exception();
 			}
 		}
-	}
-
-	internal sealed class NoInstanceToMakePassive : Exception
-	{
-		public NoInstanceToMakePassive() : base("No instances to make passive.") { }
 	}
 }

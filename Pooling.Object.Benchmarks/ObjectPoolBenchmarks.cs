@@ -12,22 +12,25 @@ public class ObjectPoolBenchmarks
 	private ObjectPool<FakePooledObject> _hotPool;
 	private ObjectPool<FakePooledObject> _coldPool;
 
-	[IterationSetup]
+	[GlobalSetup]
 	public void Setup()
 	{
 		var fakeObject = new FakePooledObject();
 		_coldPool = new ObjectPool<FakePooledObject>(BorrowStrategy.LIFO,
-			new LambdaBasedPooledObjectFactory<FakePooledObject>(() => fakeObject));
+			new LambdaBasedObjectFactory<FakePooledObject>(() => fakeObject));
 		_hotPool = new ObjectPool<FakePooledObject>(BorrowStrategy.LIFO,
-			new LambdaBasedPooledObjectFactory<FakePooledObject>(() => fakeObject));
+			new LambdaBasedObjectFactory<FakePooledObject>(() => fakeObject));
 		_hotPool.WarmUp(WARMUP_AMOUNT);
 	}
 
-	[IterationCleanup]
+	[GlobalCleanup]
 	public void Cleanup() => _hotPool.Dispose();
 
+	[Benchmark(Baseline = true)]
+	public FakePooledObject Request_Hot() => _hotPool.Request();
+
 	[Benchmark]
-	public void Request() => _hotPool.Request();
+	public FakePooledObject Request_Cold() => _coldPool.Request();
 
 	[Benchmark]
 	public void Cycle() => _hotPool.Release(_hotPool.Request());

@@ -14,7 +14,7 @@ namespace Depra.Pooling
 		private readonly IPoolHandle<TPooled> _pool;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal PooledInstance(IPoolHandle<TPooled> pool, TPooled obj) : this()
+		internal PooledInstance(IPoolHandle<TPooled> pool, TPooled obj)
 		{
 			Obj = obj;
 			_pool = pool;

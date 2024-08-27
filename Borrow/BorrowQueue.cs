@@ -38,6 +38,6 @@ namespace Depra.Borrow
 		public TValue Next() => _values.Dequeue();
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Add(ref TValue instance) => _values.Enqueue(instance);
+		public void Add(TValue instance) => _values.Enqueue(instance);
 	}
 }

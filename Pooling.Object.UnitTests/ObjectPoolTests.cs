@@ -13,20 +13,22 @@ public sealed class ObjectPoolTests
 	public void Warm_Up(int amount)
 	{
 		// Arrange:
-		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new PooledClassFactory<TestPooled>(), amount);
+		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new ReflectionBasedObjectFactory<TestPooled>(),
+			amount);
 
 		// Act:
 		pool.WarmUp(amount);
 
 		// Assert:
 		pool.CountAll.Should().Be(amount);
+		pool.CountPassive.Should().Be(amount);
 	}
 
 	[Fact]
 	public void Request()
 	{
 		// Arrange:
-		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new PooledClassFactory<TestPooled>());
+		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new ReflectionBasedObjectFactory<TestPooled>());
 
 		// Act:
 		var obj = pool.Request();
@@ -34,6 +36,7 @@ public sealed class ObjectPoolTests
 		// Assert:
 		obj.Should().NotBeNull();
 		obj.Created.Should().BeTrue();
+		pool.CountActive.Should().Be(1);
 	}
 
 	[Theory]
@@ -41,7 +44,7 @@ public sealed class ObjectPoolTests
 	public void Release(int amount)
 	{
 		// Arrange:
-		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new PooledClassFactory<TestPooled>());
+		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new ReflectionBasedObjectFactory<TestPooled>());
 
 		var collection = new List<TestPooled>(amount);
 		for (var i = 0; i < amount; i++)
@@ -59,13 +62,15 @@ public sealed class ObjectPoolTests
 
 		// Assert:
 		lastObject.Free.Should().BeTrue();
+		pool.CountPassive.Should().Be(1);
+		pool.CountActive.Should().Be(amount - 1);
 	}
 
 	[Fact]
 	public void Dispose()
 	{
 		// Arrange:
-		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new PooledClassFactory<TestPooled>());
+		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new ReflectionBasedObjectFactory<TestPooled>());
 
 		// Act:
 		pool.Request();
@@ -78,21 +83,27 @@ public sealed class ObjectPoolTests
 
 		// Assert:
 		pool.CountAll.Should().Be(0);
+		pool.CountActive.Should().Be(0);
+		pool.CountPassive.Should().Be(0);
 	}
 
 	[Theory]
 	[InlineData(30)]
-	public void AddFreeRange(int capacity)
+	public void AddFreeRange(int amount)
 	{
 		// Arrange:
-		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new PooledClassFactory<TestPooled>(), capacity);
-		var collection = new[] { pool.Request() };
+		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new ReflectionBasedObjectFactory<TestPooled>(), amount);
+		var collection = new TestPooled[amount];
+		for (var index = 0; index < collection.Length; index++)
+		{
+			collection[index] = pool.Request();
+		}
 
 		// Act:
 		pool.AddFreeRange(collection);
 
 		// Assert:
-		//pool.CountInactive.Should().Be(1);
+		pool.CountPassive.Should().Be(amount);
 		Array.ForEach(collection, pooled => pooled.Free.Should().BeTrue());
 	}
 
@@ -101,13 +112,15 @@ public sealed class ObjectPoolTests
 	public void RequestRange(int amount)
 	{
 		// Arrange:
-		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new PooledClassFactory<TestPooled>(), amount);
+		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new ReflectionBasedObjectFactory<TestPooled>(),
+			amount);
 
 		// Act:
 		pool.RequestRange(amount);
 
 		// Assert:
 		pool.CountAll.Should().Be(amount);
+		pool.CountActive.Should().Be(amount);
 	}
 
 	[Theory]
@@ -115,7 +128,8 @@ public sealed class ObjectPoolTests
 	public void ReleaseRange(int capacity)
 	{
 		// Arrange:
-		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new PooledClassFactory<TestPooled>(), capacity);
+		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new ReflectionBasedObjectFactory<TestPooled>(),
+			capacity);
 		var collection = new[] { pool.Request() };
 
 		// Act:
@@ -123,5 +137,6 @@ public sealed class ObjectPoolTests
 
 		// Assert:
 		Array.ForEach(collection, pooled => pooled.Free.Should().BeTrue());
+		pool.CountPassive.Should().Be(collection.Length);
 	}
 }

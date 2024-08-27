@@ -15,6 +15,6 @@ namespace Depra.Borrow
 
 		TValue Next();
 
-		void Add(ref TValue instance);
+		void Add(TValue instance);
 	}
 }
