@@ -67,18 +67,18 @@ namespace Depra.Pooling.Object
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public TPooled Request(out PooledInstance<TPooled> instance)
 		{
-			if (CountPassive > 0)
-			{
-				// Reuse an instance if there are active instances.
-				instance = _passiveInstances.Next();
-				instance.Obj.OnPoolReuse();
-			}
-			else
+			if (CountPassive == 0)
 			{
 				// Create a new instance if there are no active instances.
 				instance = new PooledInstance<TPooled>(this, _objectFactory.Create(Key));
 				instance.Obj.OnPoolCreate(this);
 				++CountAll;
+			}
+			else
+			{
+				// Reuse an instance if there are active instances.
+				instance = _passiveInstances.Next();
+				instance.Obj.OnPoolReuse();
 			}
 
 			instance.OnPoolGet();

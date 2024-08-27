@@ -2,6 +2,7 @@
 // © 2024 Nikolay Melnikov <n.melnikov@depra.org>
 
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Depra.Pooling.Object
 {
@@ -24,10 +25,16 @@ namespace Depra.Pooling.Object
 			_onDisable = onDisable;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		TObject IPooledObjectFactory<TObject>.Create(object key) => _create.Invoke();
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		void IPooledObjectFactory<TObject>.Destroy(object key, TObject instance) => _destroy?.Invoke(instance);
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		void IPooledObjectFactory<TObject>.OnEnable(object key, TObject instance) => _onEnable?.Invoke(key, instance);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		void IPooledObjectFactory<TObject>.OnDisable(object key, TObject instance) => _onDisable?.Invoke(key, instance);
 	}
 }

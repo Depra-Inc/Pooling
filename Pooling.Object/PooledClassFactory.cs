@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Depra.Pooling.Object
 {
@@ -17,6 +18,7 @@ namespace Depra.Pooling.Object
 			_instances = new Dictionary<object, TClass>();
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public TClass Create(object key)
 		{
 			if (_instances.TryGetValue(key, out var instance))
@@ -32,6 +34,7 @@ namespace Depra.Pooling.Object
 			return instance;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Destroy(object key, TClass instance)
 		{
 			if (instance is IDisposable disposableInstance)
