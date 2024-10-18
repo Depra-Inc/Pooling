@@ -89,6 +89,7 @@ namespace Depra.Pooling.Object
 
 			var instance = PooledInstance<TPooled>.Create(this, obj);
 			instance.OnPoolSleep();
+			_objectFactory.OnDisable(Key, obj);
 
 			if (CountPassive < _maxCapacity)
 			{
