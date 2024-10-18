@@ -8,4 +8,8 @@
         <RootNamespace>Depra.Borrow</RootNamespace>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
 </Project>

@@ -8,6 +8,10 @@
         <RootNamespace>Depra.Pooling.Object</RootNamespace>
     </PropertyGroup>
 
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\Borrow\Borrow.csproj" />
       <ProjectReference Include="..\Pooling\Pooling.csproj" />
