@@ -4,9 +4,16 @@
 using System;
 using System.Runtime.CompilerServices;
 using Depra.Borrow;
+#if ENABLE_IL2CPP
+using Unity.IL2CPP.CompilerServices;
+#endif
 
 namespace Depra.Pooling.Object
 {
+#if ENABLE_IL2CPP
+	[Il2CppSetOption(Option.NullChecks, false)]
+	[Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+#endif
 	public sealed class ObjectPool<TPooled> : IPool<TPooled>, IPoolHandle<TPooled>, IDisposable where TPooled : IPooled
 	{
 		private const int MAX_CAPACITY = 10000;
@@ -111,7 +118,7 @@ namespace Depra.Pooling.Object
 		IPooled IPool.RequestPooled() => Request();
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		void IPool.ReleasePooled(IPooled pooled) => Release((TPooled) pooled);
+		void IPool.ReleasePooled(IPooled pooled) => Release((TPooled)pooled);
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		void IPoolHandle<TPooled>.ReturnInstanceToPool(PooledInstance<TPooled> instance) => Release(instance.Obj);

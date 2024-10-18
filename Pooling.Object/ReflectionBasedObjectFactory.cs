@@ -4,9 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+#if ENABLE_IL2CPP
+using Unity.IL2CPP.CompilerServices;
+#endif
 
 namespace Depra.Pooling.Object
 {
+#if ENABLE_IL2CPP
+	[Il2CppSetOption(Option.NullChecks, false)]
+	[Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+#endif
 	public sealed class ReflectionBasedObjectFactory<TClass> : IPooledObjectFactory<TClass> where TClass : class
 	{
 		private readonly object[] _constructorArgs;
@@ -28,7 +35,7 @@ namespace Depra.Pooling.Object
 
 			instance = _constructorArgs == null
 				? Activator.CreateInstance<TClass>()
-				: (TClass) Activator.CreateInstance(typeof(TClass), _constructorArgs);
+				: (TClass)Activator.CreateInstance(typeof(TClass), _constructorArgs);
 			_instances.Add(key, instance);
 
 			return instance;
