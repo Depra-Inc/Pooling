@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // © 2024 Nikolay Melnikov <n.melnikov@depra.org>
 
-using Depra.Borrow;
 using FluentAssertions;
 
 namespace Depra.Pooling.Object.UnitTests;
@@ -13,8 +12,8 @@ public sealed class ObjectPoolTests
 	public void Warm_Up(int amount)
 	{
 		// Arrange:
-		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new ReflectionBasedObjectFactory<TestPooled>(),
-			amount);
+		var configuration = new PoolConfiguration(amount);
+		var pool = new ObjectPool<TestPooled>(configuration, new ReflectionBasedObjectFactory<TestPooled>());
 
 		// Act:
 		pool.WarmUp(amount);
@@ -28,7 +27,38 @@ public sealed class ObjectPoolTests
 	public void Request()
 	{
 		// Arrange:
-		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new ReflectionBasedObjectFactory<TestPooled>());
+		var pool = new ObjectPool<TestPooled>(new PoolConfiguration(), new ReflectionBasedObjectFactory<TestPooled>());
+
+		// Act:
+		var obj = pool.Request();
+
+		// Assert:
+		obj.Should().NotBeNull();
+		obj.Created.Should().BeTrue();
+		pool.CountActive.Should().Be(1);
+	}
+
+	[Fact]
+	public void Request_WhenPoolIsOverflowed_ShouldThrow()
+	{
+		// Arrange:
+		var configuration = new PoolConfiguration(0, 0, overflowStrategy: OverflowStrategy.THROW_EXCEPTION);
+		var pool = new ObjectPool<TestPooled>(configuration, new ReflectionBasedObjectFactory<TestPooled>());
+
+		// Act:
+		Action act = () => pool.Request();
+
+		// Assert:
+		act.Should().Throw<PoolOverflowed>();
+	}
+
+	[Fact]
+	public void Request_WhenPoolIsOverflowed_ShouldReuse()
+	{
+		// Arrange:
+		var configuration = new PoolConfiguration(1, 1, overflowStrategy: OverflowStrategy.REUSE);
+		var pool = new ObjectPool<TestPooled>(configuration, new ReflectionBasedObjectFactory<TestPooled>());
+		pool.Request();
 
 		// Act:
 		var obj = pool.Request();
@@ -44,8 +74,7 @@ public sealed class ObjectPoolTests
 	public void Release(int amount)
 	{
 		// Arrange:
-		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new ReflectionBasedObjectFactory<TestPooled>());
-
+		var pool = new ObjectPool<TestPooled>(new PoolConfiguration(), new ReflectionBasedObjectFactory<TestPooled>());
 		var collection = new List<TestPooled>(amount);
 		for (var i = 0; i < amount; i++)
 		{
@@ -70,7 +99,7 @@ public sealed class ObjectPoolTests
 	public void Dispose()
 	{
 		// Arrange:
-		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new ReflectionBasedObjectFactory<TestPooled>());
+		var pool = new ObjectPool<TestPooled>(new PoolConfiguration(), new ReflectionBasedObjectFactory<TestPooled>());
 
 		// Act:
 		pool.Request();
@@ -92,7 +121,8 @@ public sealed class ObjectPoolTests
 	public void AddFreeRange(int amount)
 	{
 		// Arrange:
-		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new ReflectionBasedObjectFactory<TestPooled>(), amount);
+		var configuration = new PoolConfiguration(amount);
+		var pool = new ObjectPool<TestPooled>(configuration, new ReflectionBasedObjectFactory<TestPooled>());
 		var collection = new TestPooled[amount];
 		for (var index = 0; index < collection.Length; index++)
 		{
@@ -112,8 +142,7 @@ public sealed class ObjectPoolTests
 	public void RequestRange(int amount)
 	{
 		// Arrange:
-		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new ReflectionBasedObjectFactory<TestPooled>(),
-			amount);
+		var pool = new ObjectPool<TestPooled>(new PoolConfiguration(), new ReflectionBasedObjectFactory<TestPooled>());
 
 		// Act:
 		pool.RequestRange(amount);
@@ -125,12 +154,16 @@ public sealed class ObjectPoolTests
 
 	[Theory]
 	[InlineData(30)]
-	public void ReleaseRange(int capacity)
+	public void ReleaseRange(int amount)
 	{
 		// Arrange:
-		var pool = new ObjectPool<TestPooled>(BorrowStrategy.LIFO, new ReflectionBasedObjectFactory<TestPooled>(),
-			capacity);
-		var collection = new[] { pool.Request() };
+		var configuration = new PoolConfiguration(amount);
+		var pool = new ObjectPool<TestPooled>(configuration, new ReflectionBasedObjectFactory<TestPooled>());
+		var collection = new TestPooled[amount];
+		for (var index = 0; index < collection.Length; index++)
+		{
+			collection[index] = pool.Request();
+		}
 
 		// Act:
 		pool.ReleaseRange(collection);

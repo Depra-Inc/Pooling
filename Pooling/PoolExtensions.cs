@@ -86,5 +86,14 @@ namespace Depra.Pooling
 				pool.ReleasePooled(item);
 			}
 		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void AddFreeRange<T>(this IPool<T> self, IEnumerable<T> collection) where T : IPooled
+		{
+			foreach (var item in collection)
+			{
+				self.Release(item);
+			}
+		}
 	}
 }

@@ -2,7 +2,6 @@
 // © 2024 Nikolay Melnikov <n.melnikov@depra.org>
 
 using BenchmarkDotNet.Attributes;
-using Depra.Borrow;
 
 namespace Depra.Pooling.Object.Benchmarks;
 
@@ -16,9 +15,10 @@ public class ObjectPoolBenchmarks
 	public void Setup()
 	{
 		var fakeObject = new FakePooledObject();
-		_coldPool = new ObjectPool<FakePooledObject>(BorrowStrategy.LIFO,
+		var configuration = new PoolConfiguration();
+		_coldPool = new ObjectPool<FakePooledObject>(configuration,
 			new LambdaBasedObjectFactory<FakePooledObject>(() => fakeObject));
-		_hotPool = new ObjectPool<FakePooledObject>(BorrowStrategy.LIFO,
+		_hotPool = new ObjectPool<FakePooledObject>(configuration,
 			new LambdaBasedObjectFactory<FakePooledObject>(() => fakeObject));
 		_hotPool.WarmUp(WARMUP_AMOUNT);
 	}

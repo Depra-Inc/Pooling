@@ -29,9 +29,9 @@ namespace Depra.Borrow
 
 		public void Dispose()
 		{
-			foreach (var value in _values)
+			for (var index = 0; index < _values.Count; index++)
 			{
-				_disposeAction(value);
+				_disposeAction(_values[index]);
 			}
 
 			_values.Clear();

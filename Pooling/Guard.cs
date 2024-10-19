@@ -1,8 +1,9 @@
-﻿using System;
+﻿// SPDX-License-Identifier: Apache-2.0
+// © 2024 Nikolay Melnikov <n.melnikov@depra.org>
+
+using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-
-[assembly: InternalsVisibleTo("Depra.Pooling.Object")]
 
 namespace Depra.Pooling
 {
@@ -15,7 +16,7 @@ namespace Depra.Pooling
 
 		[Conditional("DEBUG")]
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		private static void Against(bool condition, Func<Exception> exception)
+		public static void Against(bool condition, Func<Exception> exception)
 		{
 			if (condition)
 			{
