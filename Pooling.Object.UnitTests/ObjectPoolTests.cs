@@ -13,7 +13,7 @@ public sealed class ObjectPoolTests
 	{
 		// Arrange:
 		var configuration = new PoolConfiguration(amount);
-		var pool = new ObjectPool<TestPooled>(configuration, new ReflectionBasedObjectFactory<TestPooled>());
+		var pool = new ObjectPool<TestPooled>(new ReflectionBasedObjectFactory<TestPooled>(), configuration);
 
 		// Act:
 		pool.WarmUp(amount);
@@ -27,7 +27,7 @@ public sealed class ObjectPoolTests
 	public void Request()
 	{
 		// Arrange:
-		var pool = new ObjectPool<TestPooled>(new PoolConfiguration(), new ReflectionBasedObjectFactory<TestPooled>());
+		var pool = new ObjectPool<TestPooled>(new ReflectionBasedObjectFactory<TestPooled>(), new PoolConfiguration());
 
 		// Act:
 		var obj = pool.Request();
@@ -43,7 +43,7 @@ public sealed class ObjectPoolTests
 	{
 		// Arrange:
 		var configuration = new PoolConfiguration(0, 0, overflowStrategy: OverflowStrategy.THROW_EXCEPTION);
-		var pool = new ObjectPool<TestPooled>(configuration, new ReflectionBasedObjectFactory<TestPooled>());
+		var pool = new ObjectPool<TestPooled>(new ReflectionBasedObjectFactory<TestPooled>(), configuration);
 
 		// Act:
 		Action act = () => pool.Request();
@@ -57,7 +57,7 @@ public sealed class ObjectPoolTests
 	{
 		// Arrange:
 		var configuration = new PoolConfiguration(1, 1, overflowStrategy: OverflowStrategy.REUSE);
-		var pool = new ObjectPool<TestPooled>(configuration, new ReflectionBasedObjectFactory<TestPooled>());
+		var pool = new ObjectPool<TestPooled>(new ReflectionBasedObjectFactory<TestPooled>(), configuration);
 		pool.Request();
 
 		// Act:
@@ -74,7 +74,7 @@ public sealed class ObjectPoolTests
 	public void Release(int amount)
 	{
 		// Arrange:
-		var pool = new ObjectPool<TestPooled>(new PoolConfiguration(), new ReflectionBasedObjectFactory<TestPooled>());
+		var pool = new ObjectPool<TestPooled>(new ReflectionBasedObjectFactory<TestPooled>(), new PoolConfiguration());
 		var collection = new List<TestPooled>(amount);
 		for (var i = 0; i < amount; i++)
 		{
@@ -99,7 +99,7 @@ public sealed class ObjectPoolTests
 	public void Dispose()
 	{
 		// Arrange:
-		var pool = new ObjectPool<TestPooled>(new PoolConfiguration(), new ReflectionBasedObjectFactory<TestPooled>());
+		var pool = new ObjectPool<TestPooled>(new ReflectionBasedObjectFactory<TestPooled>(), new PoolConfiguration());
 
 		// Act:
 		pool.Request();
@@ -122,7 +122,7 @@ public sealed class ObjectPoolTests
 	{
 		// Arrange:
 		var configuration = new PoolConfiguration(amount);
-		var pool = new ObjectPool<TestPooled>(configuration, new ReflectionBasedObjectFactory<TestPooled>());
+		var pool = new ObjectPool<TestPooled>(new ReflectionBasedObjectFactory<TestPooled>(), configuration);
 		var collection = new TestPooled[amount];
 		for (var index = 0; index < collection.Length; index++)
 		{
@@ -142,7 +142,7 @@ public sealed class ObjectPoolTests
 	public void RequestRange(int amount)
 	{
 		// Arrange:
-		var pool = new ObjectPool<TestPooled>(new PoolConfiguration(), new ReflectionBasedObjectFactory<TestPooled>());
+		var pool = new ObjectPool<TestPooled>(new ReflectionBasedObjectFactory<TestPooled>(), new PoolConfiguration());
 
 		// Act:
 		pool.RequestRange(amount);
@@ -158,7 +158,7 @@ public sealed class ObjectPoolTests
 	{
 		// Arrange:
 		var configuration = new PoolConfiguration(amount);
-		var pool = new ObjectPool<TestPooled>(configuration, new ReflectionBasedObjectFactory<TestPooled>());
+		var pool = new ObjectPool<TestPooled>(new ReflectionBasedObjectFactory<TestPooled>(), configuration);
 		var collection = new TestPooled[amount];
 		for (var index = 0; index < collection.Length; index++)
 		{

@@ -19,7 +19,7 @@ namespace Depra.Pooling.Object
 		private readonly IBorrowBuffer<PooledInstance<TPooled>> _passiveInstances;
 		private readonly BorrowCircularList<PooledInstance<TPooled>> _activeInstances;
 
-		public ObjectPool(PoolConfiguration configuration, IPooledObjectFactory<TPooled> factory, object key = null)
+		public ObjectPool(IPooledObjectFactory<TPooled> factory, PoolConfiguration configuration, object key = null)
 		{
 			Key = key ?? this;
 			_maxCapacity = configuration.MaxCapacity;
@@ -28,7 +28,7 @@ namespace Depra.Pooling.Object
 			_activeInstances = new BorrowCircularList<PooledInstance<TPooled>>(configuration.MaxCapacity);
 			_passiveInstances = BorrowBuffer.Create<PooledInstance<TPooled>>(
 				configuration.BorrowStrategy,
-				configuration.InitialCapacity,
+				configuration.InitCapacity,
 				DisposeInstance);
 		}
 

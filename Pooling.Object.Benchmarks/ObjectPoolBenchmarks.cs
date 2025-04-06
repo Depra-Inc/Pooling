@@ -16,10 +16,8 @@ public class ObjectPoolBenchmarks
 	{
 		var fakeObject = new FakePooledObject();
 		var configuration = new PoolConfiguration();
-		_coldPool = new ObjectPool<FakePooledObject>(configuration,
-			new LambdaBasedObjectFactory<FakePooledObject>(() => fakeObject));
-		_hotPool = new ObjectPool<FakePooledObject>(configuration,
-			new LambdaBasedObjectFactory<FakePooledObject>(() => fakeObject));
+		_coldPool = new ObjectPool<FakePooledObject>(new LambdaBasedObjectFactory<FakePooledObject>(() => fakeObject), configuration);
+		_hotPool = new ObjectPool<FakePooledObject>(new LambdaBasedObjectFactory<FakePooledObject>(() => fakeObject), configuration);
 		_hotPool.WarmUp(WARMUP_AMOUNT);
 	}
 
