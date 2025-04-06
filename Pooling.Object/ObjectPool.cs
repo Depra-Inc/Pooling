@@ -1,18 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
-// © 2024 Nikolay Melnikov <n.melnikov@depra.org>
+// © 2024-2025 Depra <n.melnikov@depra.org>
 
 using System;
 using System.Runtime.CompilerServices;
 using Depra.Borrow;
-#if ENABLE_IL2CPP
-using Unity.IL2CPP.CompilerServices;
-#endif
 
 namespace Depra.Pooling.Object
 {
 #if ENABLE_IL2CPP
-	[Il2CppSetOption(Option.NullChecks, false)]
-	[Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Option.NullChecks, false)]
+	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Option.ArrayBoundsChecks, false)]
 #endif
 	public sealed class ObjectPool<TPooled> : IPool<TPooled>, IPoolHandle<TPooled>, IDisposable where TPooled : IPooled
 	{
