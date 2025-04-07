@@ -10,26 +10,22 @@ namespace Depra.Pooling
 	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Option.NullChecks, false)]
 	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Option.ArrayBoundsChecks, false)]
 #endif
-	public sealed class PoolService
+	public sealed class PoolService : IDisposable
 	{
 		private readonly Dictionary<int, IPool> _pools = new(32);
 
-		public void Register(int key, IPool pool) => _pools.TryAdd(key, pool);
-
-		public void Unregister(int key)
+		public void Dispose()
 		{
-			if (!_pools.TryGetValue(key, out var pool))
+			foreach (var pool in _pools.Values)
 			{
-				return;
+				if (pool is IDisposable disposable)
+				{
+					disposable.Dispose();
+				}
 			}
-
-			if (pool is IDisposable disposable)
-			{
-				disposable.Dispose();
-			}
-
-			_pools.Remove(key);
 		}
+
+		public void Register(int key, IPool pool) => _pools.TryAdd(key, pool);
 
 		public TPooled Request<TPooled>(int key) where TPooled : IPooled => (TPooled)Request(key);
 
