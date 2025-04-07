@@ -1,39 +1,40 @@
 // SPDX-License-Identifier: Apache-2.0
-// © 2024 Nikolay Melnikov <n.melnikov@depra.org>
+// © 2024-2025 Depra <n.melnikov@depra.org>
 
 using System;
 using System.Runtime.CompilerServices;
 using Depra.Borrow;
-#if ENABLE_IL2CPP
-using Unity.IL2CPP.CompilerServices;
-#endif
 
 namespace Depra.Pooling.Object
 {
 #if ENABLE_IL2CPP
-	[Il2CppSetOption(Option.NullChecks, false)]
-	[Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Option.NullChecks, false)]
+	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Option.ArrayBoundsChecks, false)]
 #endif
 	public sealed class ObjectPool<TPooled> : IPool<TPooled>, IPoolHandle<TPooled>, IDisposable where TPooled : IPooled
 	{
-		private const int MAX_CAPACITY = 10000;
-		private const int DEFAULT_CAPACITY = 10;
-
 		private readonly int _maxCapacity;
+		private readonly OverflowStrategy _overflowStrategy;
 		private readonly IPooledObjectFactory<TPooled> _objectFactory;
 		private readonly IBorrowBuffer<PooledInstance<TPooled>> _passiveInstances;
+		private readonly BorrowCircularList<PooledInstance<TPooled>> _activeInstances;
 
-		public ObjectPool(BorrowStrategy borrowStrategy, IPooledObjectFactory<TPooled> objectFactory,
-			object key = null, int capacity = DEFAULT_CAPACITY, int maxCapacity = MAX_CAPACITY)
+		public ObjectPool(IPooledObjectFactory<TPooled> factory, PoolConfiguration configuration, object key = null)
 		{
 			Key = key ?? this;
-			_maxCapacity = maxCapacity < 0 ? MAX_CAPACITY : maxCapacity;
-			_objectFactory = objectFactory ?? throw new ArgumentNullException(nameof(objectFactory));
-			_passiveInstances = BorrowBuffer.Create<PooledInstance<TPooled>>(borrowStrategy, DisposeInstance, capacity);
+			_maxCapacity = configuration.MaxCapacity;
+			_overflowStrategy = configuration.OverflowStrategy;
+			_objectFactory = factory ?? throw new ArgumentNullException(nameof(factory));
+			_activeInstances = new BorrowCircularList<PooledInstance<TPooled>>(configuration.MaxCapacity);
+			_passiveInstances = BorrowBuffer.Create<PooledInstance<TPooled>>(
+				configuration.BorrowStrategy,
+				configuration.InitCapacity,
+				DisposeInstance);
 		}
 
 		public void Dispose()
 		{
+			_activeInstances.Dispose();
 			_passiveInstances.Dispose();
 			CountAll = 0;
 		}
@@ -69,22 +70,18 @@ namespace Depra.Pooling.Object
 			TPooled obj;
 			if (CountPassive == 0)
 			{
-				// Create a new instance if there are no active instances.
-				instance = new PooledInstance<TPooled>(this, _objectFactory.Create(Key));
-				obj = instance.Obj;
-				obj.OnPoolCreate(this);
-				++CountAll;
+				obj = CountActive < _maxCapacity
+					? CreateInstance(out instance)
+					: CreateInstanceOverCapacity(out instance);
 			}
 			else
 			{
-				// Reuse an instance if there are active instances.
-				instance = _passiveInstances.Next();
-				obj = instance.Obj;
-				obj.OnPoolReuse();
+				obj = ReusePassiveInstance(out instance);
 			}
 
 			instance.OnPoolGet();
 			_objectFactory.OnEnable(Key, obj);
+			_activeInstances.Add(instance);
 
 			return obj;
 		}
@@ -102,6 +99,31 @@ namespace Depra.Pooling.Object
 			{
 				_passiveInstances.Add(instance);
 			}
+
+			if (CountActive > 0)
+			{
+				_activeInstances.Remove(instance);
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private TPooled CreateInstanceOverCapacity(out PooledInstance<TPooled> instance) => _overflowStrategy switch
+		{
+			OverflowStrategy.REQUEST => CreateInstance(out instance),
+			OverflowStrategy.REUSE => ReuseActiveInstance(out instance),
+			OverflowStrategy.THROW_EXCEPTION => throw new PoolOverflowed(Key),
+			_ => throw new ArgumentOutOfRangeException(nameof(OverflowStrategy))
+		};
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private TPooled CreateInstance(out PooledInstance<TPooled> instance)
+		{
+			instance = new PooledInstance<TPooled>(this, _objectFactory.Create(Key));
+			var obj = instance.Obj;
+			obj.OnPoolCreate(this);
+			++CountAll;
+
+			return obj;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -112,6 +134,26 @@ namespace Depra.Pooling.Object
 
 			_objectFactory.OnDisable(Key, obj);
 			_objectFactory.Destroy(Key, obj);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private TPooled ReuseActiveInstance(out PooledInstance<TPooled> instance)
+		{
+			instance = _activeInstances.Next();
+			var obj = instance.Obj;
+			obj.OnPoolReuse();
+
+			return obj;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private TPooled ReusePassiveInstance(out PooledInstance<TPooled> instance)
+		{
+			instance = _passiveInstances.Next();
+			var obj = instance.Obj;
+			obj.OnPoolReuse();
+
+			return obj;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

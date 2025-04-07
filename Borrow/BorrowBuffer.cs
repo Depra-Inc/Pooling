@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// © 2024 Nikolay Melnikov <n.melnikov@depra.org>
+// © 2024-2025 Depra <n.melnikov@depra.org>
 
 using System;
 using System.Runtime.CompilerServices;
@@ -16,7 +16,7 @@ namespace Depra.Borrow
 	public static class BorrowBuffer
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static IBorrowBuffer<T> Create<T>(BorrowStrategy strategy, Action<T> dispose, int capacity) => strategy switch
+		public static IBorrowBuffer<T> Create<T>(BorrowStrategy strategy, int capacity, Action<T> dispose) => strategy switch
 		{
 			BorrowStrategy.LIFO => new BorrowStack<T>(capacity, dispose),
 			BorrowStrategy.FIFO => new BorrowQueue<T>(capacity, dispose),

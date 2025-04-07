@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// © 2024 Nikolay Melnikov <n.melnikov@depra.org>
+// © 2024-2025 Depra <n.melnikov@depra.org>
 
 using System;
 using System.Collections.Generic;
@@ -29,9 +29,9 @@ namespace Depra.Borrow
 
 		public void Dispose()
 		{
-			foreach (var value in _values)
+			for (var index = 0; index < _values.Count; index++)
 			{
-				_disposeAction(value);
+				_disposeAction(_values[index]);
 			}
 
 			_values.Clear();

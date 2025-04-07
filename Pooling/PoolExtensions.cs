@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
-// © 2024 Nikolay Melnikov <n.melnikov@depra.org>
+// © 2024-2025 Depra <n.melnikov@depra.org>
 
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-#if ENABLE_IL2CPP
-using Unity.IL2CPP.CompilerServices;
-#endif
 
 namespace Depra.Pooling
 {
 #if ENABLE_IL2CPP
-	[Il2CppSetOption(Option.NullChecks, false)]
-	[Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Option.NullChecks, false)]
+	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Option.ArrayBoundsChecks, false)]
 #endif
 	public static class PoolExtensions
 	{
@@ -19,27 +16,27 @@ namespace Depra.Pooling
 		/// Warm up the <see cref="IPool{TPooled}"/> by requesting and releasing <paramref name="count"/> objects.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void WarmUp<TPooled>(this IPool<TPooled> pool, int count)
+		public static void WarmUp<TPooled>(this IPool<TPooled> self, int count)
 			where TPooled : IPooled =>
-			pool.ReleaseRange(pool.RequestRange(count));
+			self.ReleaseRange(self.RequestRange(count));
 
 		/// <summary>
 		/// Warm up the <see cref="IPool"/> by requesting and releasing <paramref name="count"/> objects.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void WarmUp(this IPool pool, int count) => pool.ReleaseRange(pool.RequestRange(count));
+		public static void WarmUp(this IPool self, int count) => self.ReleaseRange(self.RequestRange(count));
 
 		/// <summary>
 		/// Request a range of objects from the <see cref="IPool{TPooled}"/>.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static IEnumerable<TPooled> RequestRange<TPooled>(this IPool<TPooled> pool, int count)
+		public static IEnumerable<TPooled> RequestRange<TPooled>(this IPool<TPooled> self, int count)
 			where TPooled : IPooled
 		{
 			var collection = new TPooled[count];
 			for (var index = 0; index < count; index++)
 			{
-				collection[index] = pool.Request();
+				collection[index] = self.Request();
 			}
 
 			return collection;
@@ -49,12 +46,12 @@ namespace Depra.Pooling
 		/// Request a range of objects from the <see cref="IPool"/>.
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static IEnumerable<IPooled> RequestRange(this IPool pool, int count)
+		public static IEnumerable<IPooled> RequestRange(this IPool self, int count)
 		{
 			var collection = new IPooled[count];
 			for (var index = 0; index < count; index++)
 			{
-				collection[index] = pool.RequestPooled();
+				collection[index] = self.RequestPooled();
 			}
 
 			return collection;
@@ -65,12 +62,12 @@ namespace Depra.Pooling
 		/// </summary>
 		/// <remarks>The list should be cleared afterward.</remarks>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void ReleaseRange<TPooled>(this IPool<TPooled> pool, IEnumerable<TPooled> collection)
+		public static void ReleaseRange<TPooled>(this IPool<TPooled> self, IEnumerable<TPooled> collection)
 			where TPooled : IPooled
 		{
 			foreach (var item in collection)
 			{
-				pool.Release(item);
+				self.Release(item);
 			}
 		}
 
@@ -79,11 +76,20 @@ namespace Depra.Pooling
 		/// </summary>
 		/// <remarks>The list should be cleared afterward.</remarks>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void ReleaseRange(this IPool pool, IEnumerable<IPooled> collection)
+		public static void ReleaseRange(this IPool self, IEnumerable<IPooled> collection)
 		{
 			foreach (var item in collection)
 			{
-				pool.ReleasePooled(item);
+				self.ReleasePooled(item);
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void AddFreeRange<T>(this IPool<T> self, IEnumerable<T> collection) where T : IPooled
+		{
+			foreach (var item in collection)
+			{
+				self.Release(item);
 			}
 		}
 	}

@@ -7,6 +7,7 @@ using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Toolchains.InProcess.Emit;
+using BenchmarkDotNet.Toolchains.InProcess.NoEmit;
 using BenchmarkDotNet.Validators;
 using Depra.Pooling.Object.Benchmarks;
 
@@ -17,7 +18,7 @@ var benchmark = BenchmarkSwitcher.FromTypes([
 IConfig configuration = DefaultConfig.Instance
 	.AddDiagnoser(MemoryDiagnoser.Default)
 	.AddValidator(JitOptimizationsValidator.FailOnError)
-	.AddJob(Job.Default.WithToolchain(InProcessEmitToolchain.Instance))
+	.AddJob(Job.Default.WithToolchain(InProcessNoEmitToolchain.Instance))
 	.WithOptions(ConfigOptions.JoinSummary)
 	.WithOptions(ConfigOptions.DisableLogFile)
 	.WithOptions(ConfigOptions.DisableOptimizationsValidator)
