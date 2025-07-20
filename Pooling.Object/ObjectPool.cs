@@ -8,8 +8,8 @@ using Depra.Borrow;
 namespace Depra.Pooling.Object
 {
 #if ENABLE_IL2CPP
-	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Option.NullChecks, false)]
-	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Unity.IL2CPP.CompilerServices.Option.NullChecks, false)]
+	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Unity.IL2CPP.CompilerServices.Option.ArrayBoundsChecks, false)]
 #endif
 	public sealed class ObjectPool<TPooled> : IPool<TPooled>, IPoolHandle<TPooled>, IDisposable where TPooled : IPooled
 	{
@@ -19,17 +19,14 @@ namespace Depra.Pooling.Object
 		private readonly IBorrowBuffer<PooledInstance<TPooled>> _passiveInstances;
 		private readonly BorrowCircularList<PooledInstance<TPooled>> _activeInstances;
 
-		public ObjectPool(IPooledObjectFactory<TPooled> factory, PoolConfiguration configuration, object key = null)
+		public ObjectPool(IPooledObjectFactory<TPooled> factory, PoolConfiguration config, object key = null)
 		{
 			Key = key ?? this;
-			_maxCapacity = configuration.MaxCapacity;
-			_overflowStrategy = configuration.OverflowStrategy;
+			_maxCapacity = config.MaxCapacity;
+			_overflowStrategy = config.OverflowStrategy;
 			_objectFactory = factory ?? throw new ArgumentNullException(nameof(factory));
-			_activeInstances = new BorrowCircularList<PooledInstance<TPooled>>(configuration.MaxCapacity);
-			_passiveInstances = BorrowBuffer.Create<PooledInstance<TPooled>>(
-				configuration.BorrowStrategy,
-				configuration.InitCapacity,
-				DisposeInstance);
+			_activeInstances = new BorrowCircularList<PooledInstance<TPooled>>(config.MaxCapacity, DisposeInstance);
+			_passiveInstances = BorrowBuffer.Create<PooledInstance<TPooled>>(config.BorrowStrategy, config.InitCapacity, DisposeInstance);
 		}
 
 		public void Dispose()
@@ -89,7 +86,10 @@ namespace Depra.Pooling.Object
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Release(TPooled obj)
 		{
-			Guard.AgainstNull(obj, nameof(obj));
+			if (obj is null)
+			{
+				throw new ArgumentNullException(nameof(obj), "Cannot release a null object.");
+			}
 
 			var instance = PooledInstance<TPooled>.Create(this, obj);
 			instance.OnPoolSleep();

@@ -28,4 +28,12 @@ namespace Depra.Pooling
 		/// </summary>
 		void OnPoolReuse();
 	}
+
+	public readonly struct NullPooled : IPooled
+	{
+		void IPooled.OnPoolCreate(IPool pool) { }
+		void IPooled.OnPoolGet() { }
+		void IPooled.OnPoolSleep() { }
+		void IPooled.OnPoolReuse() { }
+	}
 }
