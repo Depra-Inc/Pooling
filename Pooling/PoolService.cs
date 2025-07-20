@@ -17,6 +17,8 @@ namespace Depra.Pooling
 
 		public void Clear() => _pools.Clear();
 
+		public bool IsRegistered(int key) => _pools.ContainsKey(key);
+
 		public void Register(int key, IPool pool) => _pools.TryAdd(key, pool);
 
 		public TPooled Request<TPooled>(int key) where TPooled : IPooled => (TPooled)Request(key);

@@ -9,6 +9,8 @@ namespace Depra.Pooling
 	{
 		void Clear();
 
+		bool IsRegistered(int key);
+
 		IEnumerable<IPool> Enumerate();
 
 		IPool<TPooled> Pool<TPooled>(int key) where TPooled : IPooled;

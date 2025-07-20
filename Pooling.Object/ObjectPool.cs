@@ -26,7 +26,9 @@ namespace Depra.Pooling.Object
 			_overflowStrategy = config.OverflowStrategy;
 			_objectFactory = factory ?? throw new ArgumentNullException(nameof(factory));
 			_activeInstances = new BorrowCircularList<PooledInstance<TPooled>>(config.MaxCapacity, DisposeInstance);
-			_passiveInstances = BorrowBuffer.Create<PooledInstance<TPooled>>(config.BorrowStrategy, config.InitCapacity, DisposeInstance);
+			_passiveInstances =
+				BorrowBuffer.Create<PooledInstance<TPooled>>(config.BorrowStrategy, config.InitCapacity,
+					DisposeInstance);
 		}
 
 		public void Dispose()
@@ -130,8 +132,12 @@ namespace Depra.Pooling.Object
 		private void DisposeInstance(PooledInstance<TPooled> instance)
 		{
 			var obj = instance.Obj;
-			obj.OnPoolSleep();
+			if (obj == null)
+			{
+				return; // Already disposed.
+			}
 
+			obj.OnPoolSleep();
 			_objectFactory.OnDisable(Key, obj);
 			_objectFactory.Destroy(Key, obj);
 		}
