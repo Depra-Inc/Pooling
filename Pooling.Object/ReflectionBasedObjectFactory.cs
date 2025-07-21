@@ -8,8 +8,8 @@ using System.Runtime.CompilerServices;
 namespace Depra.Pooling.Object
 {
 #if ENABLE_IL2CPP
-	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Option.NullChecks, false)]
-	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Unity.IL2CPP.CompilerServices.Option.NullChecks, false)]
+	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Unity.IL2CPP.CompilerServices.Option.ArrayBoundsChecks, false)]
 #endif
 	public sealed class ReflectionBasedObjectFactory<TClass> : IPooledObjectFactory<TClass> where TClass : class
 	{

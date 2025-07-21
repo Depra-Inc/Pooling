@@ -2,12 +2,13 @@
 // © 2024-2025 Depra <n.melnikov@depra.org>
 
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Depra.Borrow
 {
 #if ENABLE_IL2CPP
-	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Option.NullChecks, false)]
-	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Unity.IL2CPP.CompilerServices.Option.NullChecks, false)]
+	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Unity.IL2CPP.CompilerServices.Option.ArrayBoundsChecks, false)]
 #endif
 	public sealed class BorrowCircularList<TValue> : IBorrowBuffer<TValue>
 	{
@@ -15,20 +16,33 @@ namespace Depra.Borrow
 		private int _tail;
 		private bool _isFull;
 		private TValue[] _values;
+		private readonly Action<TValue> _disposeAction;
 
-		public int Count { get; private set; }
+		public int Count
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			get;
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			private set;
+		}
 
-		public BorrowCircularList(int capacity)
+		public BorrowCircularList(int capacity, Action<TValue> disposeAction)
 		{
 			Count = 0;
 			_head = 0;
 			_tail = 0;
 			_isFull = false;
 			_values = new TValue[capacity];
+			_disposeAction = disposeAction;
 		}
 
 		public void Dispose()
 		{
+			for (var index = 0; index < _values.Length; index++)
+			{
+				_disposeAction(_values[index]);
+			}
+
 			Count = 0;
 			_head = 0;
 			_tail = 0;
@@ -36,6 +50,7 @@ namespace Depra.Borrow
 			_isFull = false;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Add(TValue instance)
 		{
 			_values[_tail] = instance;
@@ -50,6 +65,7 @@ namespace Depra.Borrow
 			_isFull = Count == _values.Length;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public TValue Next()
 		{
 			var item = _values[_head];
@@ -60,6 +76,7 @@ namespace Depra.Borrow
 			return item;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool Remove(TValue instance)
 		{
 			var index = Array.IndexOf(_values, instance, _head, Count);
@@ -67,7 +84,7 @@ namespace Depra.Borrow
 			{
 				return false;
 			}
-			
+
 			for (var i = index; i != _tail; i = (i + 1) % _values.Length)
 			{
 				_values[i] = _values[(i + 1) % _values.Length];
