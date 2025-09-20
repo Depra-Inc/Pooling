@@ -107,11 +107,6 @@ namespace Depra.Borrow
 			while (current != _tail)
 			{
 				var next = (current + 1) % _values.Length;
-				if (next == _tail)
-				{
-					break;
-				}
-
 				_values[current] = _values[next];
 				current = next;
 			}
