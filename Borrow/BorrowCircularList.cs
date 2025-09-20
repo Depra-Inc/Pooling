@@ -2,6 +2,7 @@
 // © 2024-2025 Depra <n.melnikov@depra.org>
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace Depra.Borrow
@@ -79,15 +80,35 @@ namespace Depra.Borrow
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool Remove(TValue instance)
 		{
-			var index = Array.IndexOf(_values, instance, _head, Count);
-			if (index == -1)
+			if (Count == 0)
 			{
 				return false;
 			}
 
-			for (var i = index; i != _tail; i = (i + 1) % _values.Length)
+			var found = -1;
+			var comparer = EqualityComparer<TValue>.Default;
+			
+			for (var i = 0; i < Count; i++)
 			{
-				_values[i] = _values[(i + 1) % _values.Length];
+				var actualIndex = (_head + i) % _values.Length;
+				if (comparer.Equals(_values[actualIndex], instance))
+				{
+					found = actualIndex;
+					break;
+				}
+			}
+
+			if (found == -1)
+			{
+				return false;
+			}
+
+			var current = found;
+			while (current != _tail)
+			{
+				var next = (current + 1) % _values.Length;
+				_values[current] = _values[next];
+				current = next;
 			}
 
 			_tail = (_tail - 1 + _values.Length) % _values.Length;
