@@ -2,7 +2,6 @@
 // © 2024-2025 Depra <n.melnikov@depra.org>
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace Depra.Borrow
@@ -11,7 +10,7 @@ namespace Depra.Borrow
 	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Unity.IL2CPP.CompilerServices.Option.NullChecks, false)]
 	[Unity.IL2CPP.CompilerServices.Il2CppSetOption(Unity.IL2CPP.CompilerServices.Option.ArrayBoundsChecks, false)]
 #endif
-	public sealed class BorrowCircularList<TValue> : IBorrowBuffer<TValue>
+	public sealed class BorrowCircularList<TValue> : IBorrowBuffer<TValue> where TValue : IEquatable<TValue>
 	{
 		private int _head;
 		private int _tail;
@@ -51,7 +50,6 @@ namespace Depra.Borrow
 			_isFull = false;
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Add(TValue instance)
 		{
 			_values[_tail] = instance;
@@ -66,7 +64,6 @@ namespace Depra.Borrow
 			_isFull = Count == _values.Length;
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public TValue Next()
 		{
 			var item = _values[_head];
@@ -77,7 +74,6 @@ namespace Depra.Borrow
 			return item;
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool Remove(TValue instance)
 		{
 			if (Count == 0)
@@ -86,12 +82,10 @@ namespace Depra.Borrow
 			}
 
 			var found = -1;
-			var comparer = EqualityComparer<TValue>.Default;
-			
 			for (var i = 0; i < Count; i++)
 			{
 				var actualIndex = (_head + i) % _values.Length;
-				if (comparer.Equals(_values[actualIndex], instance))
+				if (_values[actualIndex].Equals(instance))
 				{
 					found = actualIndex;
 					break;

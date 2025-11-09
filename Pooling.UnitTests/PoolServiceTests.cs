@@ -24,16 +24,16 @@ public sealed class PoolServiceTests
 	}
 
 	[Fact]
-	public void RequestUntyped_WithInvalidKey_ThrowsException()
+	public void RequestUntyped_WithInvalidKey_ReturnNull()
 	{
 		// Arrange:
 		var poolKey = 123;
 
 		// Act:
-		var exception = Record.Exception(() => _service.Request(poolKey));
+		var result = _service.Request(poolKey);
 
 		// Assert:
-		Assert.IsType<PoolService.PoolNotRegistered>(exception);
+		Assert.IsType<NullPooled>(result);
 	}
 
 	[Fact]
@@ -81,17 +81,14 @@ public sealed class PoolServiceTests
 	}
 	
 	[Fact]
-	public void Release_WithInvalidKey_ThrowsException()
+	public void Release_WithInvalidKey_DoNothing()
 	{
 		// Arrange:
 		var poolKey = 123;
 		var pooledObject = new FakePooledObject();
 
-		// Act:
-		var exception = Record.Exception(() => _service.Release(poolKey, pooledObject));
-
-		// Assert:
-		Assert.IsType<PoolService.PoolNotRegistered>(exception);
+		// Act & Assert:
+		_service.Release(poolKey, pooledObject);
 	}
 
 	private IPool MockPool()
