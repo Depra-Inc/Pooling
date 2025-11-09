@@ -6,7 +6,8 @@ using System.Runtime.CompilerServices;
 
 namespace Depra.Pooling
 {
-	public readonly struct PooledInstance<TPooled> where TPooled : IPooled
+	public readonly struct PooledInstance<TPooled> : IEquatable<PooledInstance<TPooled>>
+		where TPooled : IPooled
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static PooledInstance<TPooled> Create(IPoolHandle<TPooled> pool, TPooled @object) => new(pool, @object);
@@ -50,6 +51,12 @@ namespace Depra.Pooling
 			Obj.OnPoolSleep();
 			Metadata.OnDeactivate();
 		}
+
+		public bool Equals(PooledInstance<TPooled> other) => Metadata.Equals(other.Metadata);
+
+		public override bool Equals(object obj) => obj is PooledInstance<TPooled> other && Equals(other);
+
+		public override int GetHashCode() => Metadata.Id;
 	}
 
 	/// <summary>
