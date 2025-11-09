@@ -21,14 +21,12 @@ namespace Depra.Pooling.Object
 
 		public ObjectPool(IPooledObjectFactory<TPooled> factory, PoolConfiguration config, object key = null)
 		{
-			Key = key ?? this;
+			Key = key ?? typeof(TPooled);
 			_maxCapacity = config.MaxCapacity;
 			_overflowStrategy = config.OverflowStrategy;
 			_objectFactory = factory ?? throw new ArgumentNullException(nameof(factory));
 			_activeInstances = new BorrowCircularList<PooledInstance<TPooled>>(config.MaxCapacity, DisposeInstance);
-			_passiveInstances =
-				BorrowBuffer.Create<PooledInstance<TPooled>>(config.BorrowStrategy, config.InitCapacity,
-					DisposeInstance);
+			_passiveInstances = BorrowBuffer.Create<PooledInstance<TPooled>>(config.BorrowStrategy, config.InitCapacity, DisposeInstance);
 		}
 
 		public void Dispose()

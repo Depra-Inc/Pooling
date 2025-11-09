@@ -21,7 +21,11 @@ namespace Depra.Pooling
 
 		public void Register(int key, IPool pool) => _pools.TryAdd(key, pool);
 
-		public TPooled Request<TPooled>(int key) where TPooled : IPooled => (TPooled)Request(key);
+		public TPooled Request<TPooled>(int key) where TPooled : IPooled
+		{
+			var pooled = Request(key);
+			return pooled is NullPooled ? throw new PoolNotRegistered(key) : (TPooled)pooled;
+		}
 
 		public IPooled Request(int key) => _pools.TryGetValue(key, out var pool)
 			? pool.RequestPooled()
