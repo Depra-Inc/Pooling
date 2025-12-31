@@ -3,6 +3,8 @@
 
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Depra.Pooling
 {
@@ -25,6 +27,10 @@ namespace Depra.Pooling
 		/// </summary>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void WarmUp(this IPool self, int count) => self.ReleaseRange(self.RequestRange(count));
+
+		public static async Task WarmUpAsync<TPooled>(this IAsyncPool<TPooled> self, int count,
+			CancellationToken cancellationToken = default) where TPooled : IPooled =>
+			self.ReleaseRange(await self.RequestAsync(count, cancellationToken));
 
 		/// <summary>
 		/// Request a range of objects from the <see cref="IPool{TPooled}"/>.
