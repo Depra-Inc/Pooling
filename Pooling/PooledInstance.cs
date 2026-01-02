@@ -15,7 +15,7 @@ namespace Depra.Pooling
 		private readonly IPoolHandle<TPooled> _pool;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal PooledInstance(IPoolHandle<TPooled> pool, TPooled obj)
+		public PooledInstance(IPoolHandle<TPooled> pool, TPooled obj)
 		{
 			Obj = obj;
 			_pool = pool;
@@ -39,14 +39,14 @@ namespace Depra.Pooling
 		public PooledInstanceMetadata Metadata { get; }
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal void OnPoolGet()
+		public void OnPoolGet()
 		{
 			Obj.OnPoolGet();
 			Metadata.OnActivate();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal void OnPoolSleep()
+		public void OnPoolSleep()
 		{
 			Obj.OnPoolSleep();
 			Metadata.OnDeactivate();

@@ -5,7 +5,7 @@ using System;
 
 namespace Depra.Pooling.Object
 {
-	internal sealed class PoolOverflowed : Exception
+	public sealed class PoolOverflowed : Exception
 	{
 		public PoolOverflowed(object key) : base($"Pool with key {key} is overflowed") { }
 	}
