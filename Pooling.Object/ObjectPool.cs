@@ -61,6 +61,8 @@ namespace Depra.Pooling.Object
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public TPooled Request() => Request(out _);
 
+		// Every way of getting an instance enables it before its hooks run:
+		// a hook may rely on an enabled object (e.g. play an effect).
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public TPooled Request(out PooledInstance<TPooled> instance)
 		{
@@ -77,7 +79,6 @@ namespace Depra.Pooling.Object
 			}
 
 			instance.OnPoolGet();
-			_objectFactory.OnEnable(Key, obj);
 			_activeInstances.Add(instance);
 
 			return obj;
@@ -122,6 +123,7 @@ namespace Depra.Pooling.Object
 			var obj = instance.Obj;
 			obj.OnPoolCreate(this);
 			++CountAll;
+			_objectFactory.OnEnable(Key, obj);
 
 			return obj;
 		}
@@ -145,6 +147,7 @@ namespace Depra.Pooling.Object
 		{
 			instance = _activeInstances.Next();
 			var obj = instance.Obj;
+			_objectFactory.OnEnable(Key, obj);
 			obj.OnPoolReuse();
 
 			return obj;
@@ -155,6 +158,7 @@ namespace Depra.Pooling.Object
 		{
 			instance = _passiveInstances.Next();
 			var obj = instance.Obj;
+			_objectFactory.OnEnable(Key, obj);
 			obj.OnPoolReuse();
 
 			return obj;
